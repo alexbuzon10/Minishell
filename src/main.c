@@ -9,40 +9,51 @@
 #include <signal.h>
 #include <errno.h>
 #include <ctype.h>
+#include <pwd.h>
 
 #include "../include/minishell.h"
 
-int main()
-{
-    char *prompt = "minishell>  ";
+int printPrompt(){
+    char *cwd = getcwd(NULL, 0);
+
+
+    if (cwd != NULL){
+        printf("MINISHELL %s> ", cwd);
+    } else {
+        perror("getcwd error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return 0;
+}
+
+int main() {
     char *linea = NULL;
 
-    command cmd1;
+    command cmd;
 
-    while(true)
-    {
-        printf("%s", prompt);
+    while(true) {
+        printPrompt();
 
         linea = readLine();
 
-        if (linea == NULL) break;
+        if (linea[0] == '\0') {
+            continue;
+        } else {
+            cmd = stringToCommand(linea);
 
-        cmd1 = stringToCommand(linea);
+            execute(&cmd);
 
-        printf("El comando introducido es: <%s>\n", linea);
-        printf("Número de argumentos: %d\n", cmd1.argc);
-
-        for (int i = 0; i < cmd1.argc; i++)
-        {
-            printf("Argumento %d: <%s>\n", i + 1, cmd1.argv[i]);
+            if (strcmp(linea, "exit") == 0) {
+                free_strMemory(&(cmd.argv), cmd.argc);
+                free(linea);
+                break;
+            }
         }
-
-        if (strcmp(linea, "exit") == 0)
-        {
-            free(linea);
-            break;
-        }
-
+        
+        free_strMemory(&(cmd.argv), cmd.argc);
         free(linea);
     }
+
+    return EXIT_SUCCESS;
 }

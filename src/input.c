@@ -14,21 +14,18 @@
 
 #include "../include/minishell.h"
 
-void trimNewLine(char *line)
-{
+void trimNewLine(char *line) {
     line[strcspn(line, "\n")] = '\0';
 }
 
-char *readLine()
-{
+char *readLine() {
     char *inpLine = NULL;
     size_t size = 0;
     ssize_t nread = 0;
 
     nread = getline(&inpLine, &size, stdin);
 
-    if (nread == -1)
-    {
+    if (nread == -1) {
         free(inpLine);
         perror("\nError al leer la línea.\n");
         return NULL;
