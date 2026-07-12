@@ -28,33 +28,42 @@ static int builtinHelp(command *cmd) {
     printf(" - exit: Salir de la Shell.\n");
     printf(" - help: Muestra información de ayuda.\n");
     printf(" - cd: Cambiar de directorio.\n");
+    printf(" - version: Muestra la version de la minishell.\n");
 
-    return 0;
+    return SUCCESS;
 }
 
 static int builtinCd(command *cmd) {
     if (cmd->argc == 1 || (cmd->argc == 2 && strcmp(cmd->argv[1], "~") == 0)) {
         chdir(getenv("HOME"));
-        return 0;
+        return SUCCESS;
     } else if (cmd->argc > 2) {
         printf("Uso: cd <ruta_buscad>");
-        return 0;
+        return SUCCESS;
     }
 
-    chdir(cmd->argv[1]);
+    int cdStatus = chdir(cmd->argv[1]);
 
-    if (errno == __O_DIRECTORY) {
+    if (cdStatus == -1) {
         perror("La ruta introducida no existe.\n");
-        return -1;
     }
 
-    return 0;
+    return SUCCESS;
+}
+
+static int builtinVersion(command *cmd) {
+    (void) cmd;
+
+    printf("Minishell -- version 0.1.0\n");
+
+    return SUCCESS;
 }
 
 static Builtin builtins[] = {
     {"exit", builtinExit},
     {"help", builtinHelp},
-    {"cd", builtinCd}
+    {"cd", builtinCd},
+    {"version", builtinVersion}
 };
 
 #define NUM_BUILTINS (sizeof(builtins) / sizeof(builtins[0]))

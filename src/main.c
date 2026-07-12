@@ -16,14 +16,15 @@
 int printPrompt(){
     char *cwd = getcwd(NULL, 0);
 
-
     if (cwd != NULL){
         printf("MINISHELL %s> ", cwd);
     } else {
         perror("getcwd error\n");
+        free(cwd);
         exit(EXIT_FAILURE);
     }
 
+    free(cwd);
     return 0;
 }
 
@@ -37,7 +38,10 @@ int main() {
 
         linea = readLine();
 
+        if (linea == NULL) break;
+
         if (linea[0] == '\0') {
+            free(linea);
             continue;
         } else {
             cmd = stringToCommand(linea);

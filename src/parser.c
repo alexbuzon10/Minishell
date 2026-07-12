@@ -57,12 +57,12 @@ int reasignarMemoria(char ***vec, int size) {
 
     if (tmp == NULL) {
         perror("Error al reasignar la memoria.\n");
-        return -1;
+        return FAIL;
     }
 
     *vec = tmp;
 
-    return 0;
+    return SUCCESS;
 }
 
 void free_strMemory(char ***vec, int size) {

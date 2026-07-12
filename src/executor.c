@@ -1,6 +1,3 @@
-#define FAIL -1
-#define SUCCESS 0
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
