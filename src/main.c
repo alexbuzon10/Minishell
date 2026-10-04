@@ -1,63 +1,54 @@
+/***********************************************************************
+ * FILE:        main.c
+ * AUTHOR:      Alejandro Buzon Garcia 
+ * DESCRIPTION: Main program
+ ***********************************************************************/
+
+/**************************** Includes *********************************/
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdbool.h> // For using 'bool', 'true' and 'false'
 #include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <errno.h>
-#include <ctype.h>
-#include <pwd.h>
 
 #include "../include/minishell.h"
+#include "../include/input.h"
+#include "../include/executor.h"
+#include "../include/parser.h"
 
-int printPrompt(){
-    char *cwd = getcwd(NULL, 0);
+/**************************** Functions ********************************/
 
-    if (cwd != NULL){
-        printf("MINISHELL %s> ", cwd);
-    } else {
-        perror("getcwd error\n");
-        free(cwd);
-        exit(EXIT_FAILURE);
-    }
+/**
+ * @fn main
+ */
+int main(void) {
+    char* line = NULL;
+    cmd_t cmd;
 
-    free(cwd);
-    return 0;
-}
+    while (true) {
+        print_prompt();
 
-int main() {
-    char *linea = NULL;
+        line = readline();
 
-    command cmd;
+        if (line == NULL) break;
 
-    while(true) {
-        printPrompt();
-
-        linea = readLine();
-
-        if (linea == NULL) break;
-
-        if (linea[0] == '\0') {
-            free(linea);
+        if (line[0] == '\0') {
+            free(line);
             continue;
         } else {
-            cmd = stringToCommand(linea);
+            cmd = parsecmd(line);
 
             execute(&cmd);
 
-            if (strcmp(linea, "exit") == 0) {
-                free_strMemory(&(cmd.argv), cmd.argc);
-                free(linea);
+            if (strcmp(line, "exit") == 0) {
+                __free_str_vec(&(cmd.argv), cmd.argc);
+                free(line);
                 break;
             }
         }
-        
-        free_strMemory(&(cmd.argv), cmd.argc);
-        free(linea);
+        __free_str_vec(&cmd.argv, cmd.argc);
+        free(line);
     }
 
-    return EXIT_SUCCESS;
+    exit(EXIT_SUCCESS);
 }

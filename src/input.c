@@ -1,37 +1,54 @@
-#define _GNU_SOURCE
+/***********************************************************************
+ * FILE:        input.c
+ * AUTHOR:      Alejandro Buzon Garcia 
+ * DESCRIPTION: Functions that treat the inputs from the user 
+ ***********************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+/**************************** Includes *********************************/
+
 #include <string.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <errno.h>
-#include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#include "../include/minishell.h"
+#include "../include/input.h"
 
-void trimNewLine(char *line) {
-    line[strcspn(line, "\n")] = '\0';
+/**************************** Functions ********************************/
+
+/**
+ * @brief Clean the buffer of the standard input (stdin)
+ */
+void stdinflush(void) {
+    char c;
+    while ((c = getchar()) != '\n' && c != EOF);
+    return;
 }
 
-char *readLine() {
-    char *inpLine = NULL;
+/**
+ * @brief Replace '\n' to '\0'
+ */
+void strtrim(char* line) {
+    line[strcspn(line, "\n")] = '\0';
+    return;
+}
+
+
+/**
+ * @brief Read a line inputed by the user
+ */
+char* readline(void) {
+    char* inputline = NULL;
     size_t size = 0;
     ssize_t nread = 0;
 
-    nread = getline(&inpLine, &size, stdin);
+    nread = getline(&inputline, &size, stdin);
 
     if (nread == -1) {
-        free(inpLine);
+        free(inputline);
         perror("\nError al leer la línea.\n");
         return NULL;
     }
 
-    trimNewLine(inpLine);
+    strtrim(inputline);
 
-    return inpLine;
+    return inputline;
 }

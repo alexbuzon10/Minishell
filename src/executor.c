@@ -1,46 +1,50 @@
-#include <stdio.h>
+/***********************************************************************
+ * FILE:        executor.c
+ * AUTHOR:      Alejandro Buzon Garcia 
+ * DESCRIPTION: Functions of executor.h
+ ***********************************************************************/
+
+/**************************** Includes *********************************/
+
 #include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+#include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <errno.h>
-#include <ctype.h>
 
 #include "../include/minishell.h"
+#include "../include/executor.h"
 
-int execute(command *cmd) {
-    if (executeBuiltin(cmd) == NOT_A_BUILTIN) {
-        pid_t pid = fork();
+/**************************** Functions ********************************/
 
-        if (pid < 0) {
-            perror("fork fail");
+/**
+ * @brief   Executes a command
+ */
+int execute(cmd_t* cmd) {
+    pid_t pid = fork();
 
-            return FAIL;
-        } else if (pid == 0) {
+    switch (pid) {
+        case -1: 
+            perror("fork");
+            printf("errno=%d", errno);
+            return __FUNC_FAIL;
+        case 0: 
             execvp(cmd->argv[0], cmd->argv);
-
             perror(cmd->argv[0]);
-
             if (errno == ENOENT)
-                _exit(127);
-        } else {
+                _Exit(127);
+            _Exit(126);
+        default:
             int status;
 
             waitpid(pid, &status, 0);
 
             int exit_code = WEXITSTATUS(status);
 
-            if (exit_code == 127) {
+            if (exit_code == 127)
                 printf("El comando introducido no existe.\n");
-            }
-        }
+    }
 
-        return SUCCESS;
-    } 
-
-    return -1;
+    return __FUNC_SUCCESS;
 }
