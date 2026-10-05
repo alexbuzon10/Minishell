@@ -15,6 +15,7 @@
 
 #include "../include/minishell.h"
 #include "../include/executor.h"
+#include "../include/builtins.h"
 
 /**************************** Functions ********************************/
 
@@ -22,29 +23,30 @@
  * @brief   Executes a command
  */
 int execute(cmd_t* cmd) {
-    pid_t pid = fork();
+    if (executebuiltin(cmd) == __NOT_A_BUILTIN){
+        pid_t pid = fork();
 
-    switch (pid) {
-        case -1: 
-            perror("fork");
-            printf("errno=%d", errno);
-            return __FUNC_FAIL;
-        case 0: 
-            execvp(cmd->argv[0], cmd->argv);
-            perror(cmd->argv[0]);
-            if (errno == ENOENT)
-                _Exit(127);
-            _Exit(126);
-        default:
-            int status;
+        switch (pid) {
+            case -1: 
+                perror("fork");
+                printf("errno=%d", errno);
+                return __FUNC_FAIL;
+            case 0: 
+                execvp(cmd->argv[0], cmd->argv);
+                perror(cmd->argv[0]);
+                if (errno == ENOENT)
+                    _Exit(127);
+                _Exit(126);
+            default:
+                int status;
 
-            waitpid(pid, &status, 0);
+                waitpid(pid, &status, 0);
 
-            int exit_code = WEXITSTATUS(status);
+                int exit_code = WEXITSTATUS(status);
 
-            if (exit_code == 127)
-                printf("El comando introducido no existe.\n");
+                if (exit_code == 127)
+                    printf("El comando introducido no existe.\n");
+        }
     }
-
     return __FUNC_SUCCESS;
 }
