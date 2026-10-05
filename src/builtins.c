@@ -1,7 +1,7 @@
 /***********************************************************************
- * FILE:        main.c
+ * FILE:        builtins.c
  * AUTHOR:      Alejandro Buzon Garcia 
- * DESCRIPTION: Main program
+ * DESCRIPTION: Builtins functions for minishell project
  ***********************************************************************/
 
 /**************************** Includes *********************************/

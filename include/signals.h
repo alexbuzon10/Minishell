@@ -1,11 +1,11 @@
 /************************************************************************
- * FILE:        parser.h
+ * FILE:        buitins.h
  * AUTHOR:      Alejandro Buzon Garcia 
- * DESCRIPTION: Functions prototypes for parsing strings to commands
+ * DESCRIPTION: Signal treatment for Minishell
  ************************************************************************/
 
-#ifndef __MINSHELL_PARSER_H
-#define __MINSHELL_PARSER_H
+#ifndef __MINSHELL_SIGNALS_H
+#define __MINSHELL_SIGNALS_H
 
 /***************************** Includes *********************************/
 
@@ -13,9 +13,6 @@
 
 /************************ Functions prototypes **************************/
 
-/**
- * @brief   Parses a string to a cmd_t structure
- */
-cmd_t parsecmd(char* line); 
 
-#endif /* __MINSHELL_PARSER_H */
+
+#endif /* __MINSHELL_SIGNALS_H */

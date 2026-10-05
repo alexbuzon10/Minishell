@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h> // For using 'bool', 'true' and 'false'
 #include <string.h>
+#include <signal.h>
 
 #include "../include/minishell.h"
 #include "../include/input.h"
@@ -24,6 +25,8 @@
 int main(void) {
     char* line = NULL;
     cmd_t cmd;
+
+    signal(SIGINT, SIG_IGN);
 
     while (true) {
         print_prompt();
