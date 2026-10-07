@@ -16,6 +16,8 @@
 #include "../include/input.h"
 #include "../include/executor.h"
 #include "../include/parser.h"
+#include "../include/signals.h"
+#include "../include/utils.h"
 
 /**************************** Functions ********************************/
 
@@ -26,10 +28,17 @@ int main(void) {
     char* line = NULL;
     cmd_t cmd;
 
-    signal(SIGINT, SIG_IGN);
+    struct sigaction sa;
+    sa.sa_handler = handler_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    sigaction(SIGINT, &sa, NULL);
+    signal(SIGQUIT, SIG_IGN);
 
     while (true) {
         print_prompt();
+        fflush(stdout);
 
         line = readline();
 

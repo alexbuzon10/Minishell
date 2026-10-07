@@ -28,6 +28,6 @@ char* readline(void);
 /**
  * @brief Replace '\n' to '\0'
  */
-void strtrim(char* line);
+void strtrim(char *line);
 
 #endif /* __MINSHELL_INPUT_H */

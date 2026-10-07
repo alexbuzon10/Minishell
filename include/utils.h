@@ -1,21 +1,20 @@
 /************************************************************************
- * FILE:        parser.h
+ * FILE:        utils.h
  * AUTHOR:      Alejandro Buzon Garcia 
- * DESCRIPTION: Functions prototypes for parsing strings to commands
+ * DESCRIPTION: ?
  ************************************************************************/
 
-#ifndef __MINSHELL_PARSER_H
-#define __MINSHELL_PARSER_H
+#ifndef __MINSHELL_UTILS_H
+#define __MINSHELL_UTILS_H
 
 /***************************** Includes *********************************/
 
-#include "minishell.h"
+
 
 /************************ Functions prototypes **************************/
 
-/**
- * @brief   Parses a string to a cmd_t structure
- */
-cmd_t parsecmd(char *line); 
+void clearscreen(void); 
 
-#endif /* __MINSHELL_PARSER_H */
+void redrawline(const char *inputline);
+
+#endif /* __MINSHELL_UTILS_H */

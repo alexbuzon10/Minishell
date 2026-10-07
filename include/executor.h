@@ -20,6 +20,6 @@
 /**
  * @brief   Executes a command
  */
-int execute(cmd_t* cmd);
+int execute(cmd_t *cmd);
 
 #endif /* __MINSHELL_PARSER_H */

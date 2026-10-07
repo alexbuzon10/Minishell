@@ -16,7 +16,7 @@
 /**
  * @brief Builtin's function
  */
-typedef int (*builtinfunc)(cmd_t*);
+typedef int (*builtinfunc)(cmd_t *);
 
 /**
  * @brief Stores a builtin
@@ -31,6 +31,6 @@ typedef struct builtin_s {
 /**
  * @brief   Executes a builtin
  */
-int executebuiltin(cmd_t* cmd); 
+int executebuiltin(cmd_t *cmd); 
 
 #endif /* __MINSHELL_BUILTINS_H */

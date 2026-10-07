@@ -19,7 +19,7 @@
 /**
  * @brief Parses a string line and splits it into a command structure.
  */
-cmd_t parsecmd(char* line) {
+cmd_t parsecmd(char *line) {
     cmd_t cmd;
 
     // Set variable with default values
@@ -35,6 +35,7 @@ cmd_t parsecmd(char* line) {
 
         if (__resize_str_vec(&cmd.argv, cmd.argc) == __FUNC_SUCCESS) {
             cmd.argv[cmd.argc - 1] = malloc(strlen(token) + 1 * sizeof(char)); // I alloc the size of the argument to de vector
+            cmd.argv[cmd.argc] = NULL;
 
             if (cmd.argv[cmd.argc - 1] == NULL) { // null pointer -> FAIL ! :'(
                 perror("malloc");
@@ -60,10 +61,10 @@ cmd_t parsecmd(char* line) {
 /**
  * @brief Resizes a dynamic string array (vector).
  */
-int __resize_str_vec(char*** str_vec, int size) {
+int __resize_str_vec(char ***str_vec, int size) {
     char **tmp = *str_vec;
 
-    tmp = realloc(tmp, size * sizeof(char*)); // 
+    tmp = realloc(tmp, (size + 1) * sizeof(char*)); // 
 
     if (tmp == NULL) {
         perror("realloc");
@@ -79,7 +80,7 @@ int __resize_str_vec(char*** str_vec, int size) {
 /**
  * @brief Frees all allocated memory within a string vector.
  */
-void __free_str_vec(char*** str_vec, int size) {
+void __free_str_vec(char ***str_vec, int size) {
     if (*str_vec != NULL) {
         for (int i = 0; i < size; i++) 
             free((*str_vec)[i]);

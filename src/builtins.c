@@ -20,12 +20,12 @@
 
 /**************************** Functions ********************************/
 
-static int buitinExit(cmd_t* cmd) {
+static int buitinExit(cmd_t *cmd) {
     (void) cmd;
     exit(EXIT_SUCCESS);
 }
 
-static int builtinHelp(cmd_t* cmd) {
+static int builtinHelp(cmd_t *cmd) {
     (void) cmd;
 
     printf("Lista de comandos: \n");
@@ -36,7 +36,7 @@ static int builtinHelp(cmd_t* cmd) {
     return __FUNC_SUCCESS;
 }
 
-static int builtinCd(cmd_t* cmd) {
+static int builtinCd(cmd_t *cmd) {
     if (cmd->argc == 1 || (cmd->argc == 2 && strcmp(cmd->argv[1], "~") == 0)) {
         chdir(getenv("HOME"));
         return 0;
@@ -66,7 +66,7 @@ static builtin_t builtins[] = {
 /**
  * @brief   Executes a builtin
  */
-int executebuiltin(cmd_t* cmd) {
+int executebuiltin(cmd_t *cmd) {
     for (size_t i = 0; i < __NUM_BUILTINS; i++) {
         if (strcmp(cmd->argv[0], builtins[i].name) == 0) {
             return builtins[i].fn(cmd);

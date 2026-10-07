@@ -40,11 +40,11 @@ int print_prompt(void);
 /**
  * @brief   Resizes a dynamic string array (vector)
  */
-int __resize_str_vec(char*** str_vec, int size);
+int __resize_str_vec(char ***str_vec, int size);
 
 /**
  * @brief   Free the memmory of a dynamic string array (vector)
  */
-void __free_str_vec(char*** str_vec, int size);
+void __free_str_vec(char ***str_vec, int size);
 
 #endif /* __MINSHELL_MINISHELL_H */
