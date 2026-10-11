@@ -17,6 +17,7 @@
 #include "../include/signals.h"
 #include "../include/terminal_codes.h"
 #include "../include/utils.h"
+#include "../include/history.h"
 
 /**************************** Functions ********************************/
 
@@ -33,15 +34,18 @@ void stdinflush(void) {
  * @brief Read a line inputted by the user
  * @return Allocated string or NULL on EOF/error/interruption
  */
-char *readline(input_status_t *status) {
+char *readline(input_status_t *status, history_t *history) {
     line_t line = {0};
     escape_t escape;
     struct termios old_term;
     unsigned char c;
     ssize_t n;
     char *result = NULL;
+    char *draft = NULL;
 
     if (status == NULL) return NULL;
+
+    if (history != NULL) history->current = history->size;
 
     *status = INPUT_ERROR;
 
@@ -60,6 +64,7 @@ char *readline(input_status_t *status) {
 
     while (1) {
         if (g_sigint_received) {
+            *status = INPUT_INTERRUPTED;
             g_sigint_received = 0;
             putchar('\n');
             goto restore;
@@ -83,10 +88,12 @@ char *readline(input_status_t *status) {
             goto restore;
         }
 
-        if (n == 0)
+        if (n == 0){
+            *status = INPUT_EOF;
             goto restore;
+        }
 
-        if (handle_escape_sequence(&line, &escape, c))
+        if (handle_escape_sequence(&line, &escape, c, history, &draft))
             continue;
 
         *status = handle_control_char(&line, (char)c);
@@ -103,8 +110,10 @@ char *readline(input_status_t *status) {
             continue;
 
         if (*status == INPUT_NOT_HANDLED) {
-            if (insert_char(&line, (char)c) != __FUNC_SUCCESS)
+            if (insert_char(&line, (char)c) != __FUNC_SUCCESS){
+                *status = INPUT_ERROR;
                 goto restore;
+            }
 
             redraw_line(&line);
         }
@@ -118,10 +127,12 @@ restore:
         perror("restore_terminal");
         free(result);
         result = NULL;
+        *status = INPUT_ERROR;
     }
 
 cleanup:
     free_line(&line);
+    free(draft);
     return result;
 }
 
@@ -283,6 +294,47 @@ void delete_at_cursor(line_t *line) {
     (line->size)--;
 }
 
+/**
+ * @brief Replaces the current line content with a new string.
+ *
+ * Copies the provided text into the line buffer, reallocating
+ * memory if the current capacity is insufficient. Updates the
+ * line size and moves the cursor to the end of the new content.
+ *
+ * @param line Pointer to the line structure to modify.
+ * @param text Null-terminated string containing the new content.
+ * @return __FUNC_SUCCESS on success, or __FUNC_FAIL if memory
+ *         allocation fails.
+ *
+ * @note The function does not take ownership of the provided text.
+ *       The caller remains responsible for managing its memory.
+ * @note The line structure must be initialized before calling
+ *       this function.
+ */
+int set_line_content(line_t *line, const char *text) {
+    if (line == NULL || text == NULL) return __FUNC_FAIL;
+
+    size_t textSize = strlen(text);
+
+    if (line->capacity < textSize + 1) {
+        char *tmp = realloc(line->buffer, textSize + 1);
+
+        if (tmp == NULL) {
+            perror("realloc");
+            return __FUNC_PANIC;
+        }
+
+        line->buffer = tmp;
+        line->capacity = textSize + 1;
+    }
+
+    strcpy(line->buffer, text);
+    line->size = textSize;
+    line->cursor_pos = line->size;
+
+    return __FUNC_SUCCESS;
+}
+
 /**************************** Cursor movement ***************************/
 
 /**
@@ -389,7 +441,7 @@ void init_escape(escape_t *escape) {
  * @brief Process a byte belonging to an ANSI escape sequence
  * @return 1 if consumed, 0 if not consumed
  */
-int handle_escape_sequence(line_t *line, escape_t *escape, unsigned char c) {
+int handle_escape_sequence(line_t *line, escape_t *escape, unsigned char c, history_t *history, char **draft) {
     if (line == NULL || escape == NULL)
         return 0;
 
@@ -426,6 +478,37 @@ int handle_escape_sequence(line_t *line, escape_t *escape, unsigned char c) {
         } else if (c == 'F') {
             escape->state = ESC_NONE;
             move_cursor_end(line);
+        } else if (c == 'A') {
+            escape->state = ESC_NONE;
+            
+            if (history == NULL || draft == NULL) return __FUNC_FAIL;
+
+            if (history != NULL && draft != NULL && history->size > 0 && history->current == history->size) {
+                *draft = strdup(line->buffer);
+
+                if (*draft == NULL) {
+                    perror("strdup");
+                    return __FUNC_FAIL;
+                }
+            }
+
+            const char *command = history_previous(history);
+
+            if (command != NULL) {
+                if (set_line_content(line, command) == __FUNC_SUCCESS)
+                    redraw_line(line);
+            }
+        } else if (c == 'B') {
+            escape->state =ESC_NONE;
+
+            const char *command = history_next(history);
+
+            if (command != NULL) {
+                if (set_line_content(line, command) == __FUNC_SUCCESS)
+                    redraw_line(line);
+            } else if (history != NULL && history->current == history->size && draft != NULL && *draft != NULL) {
+                if (set_line_content(line, *draft) == __FUNC_SUCCESS) redraw_line(line);
+            }
         } else if (c >= '0' && c <= '9') {
             escape->parameter = c - '0';
             escape->state = ESC_CSI_PARAM;

@@ -9,45 +9,54 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pwd.h>
 
 #include "../include/minishell.h"
 #include "../include/terminal_codes.h"
+#include "../include/input.h"
 
 /**************************** Functions ********************************/
 
-/**
- * NOTE: this fuction shall be in a .h 
- */
-void replace_diff_length(char *str, const char *old_sub, const char *new_sub) {
-    char *pos = strstr(str, old_sub);
-    if (pos) {
-        size_t old_len = strlen(old_sub);
-        size_t new_len = strlen(new_sub);
-        size_t tail_len = strlen(pos + old_len);
-
-        // Shift tail left or right to accommodate new length
-        memmove(pos + new_len, pos + old_len, tail_len + 1);
-        
-        // Copy new substring
-        memcpy(pos, new_sub, new_len);
-    }
-}   
+#define MAX_SIZE 250
 
 /**
  * @brief A function that prints the prompt
  */
 int print_prompt(void){
     char *cwd = getcwd(NULL, 0);
+    const char *home = getenv("HOME");
+
+    char hostname[MAX_SIZE];
+    if (gethostname(hostname, MAX_SIZE) < 0) {
+        perror("gethostname");
+        return __FUNC_FAIL;
+    }
+
+    struct passwd *pw = getpwuid(getuid());
+
+    if (pw == NULL) {
+        perror("getpwuid");
+        return __FUNC_FAIL;
+    }
 
     if (cwd != NULL){
-        replace_diff_length(cwd, getenv("HOME"), "~");
-        printf("MINISHELL " ANSI_FG_BLUE "%s " ANSI_STYLE_RESET "$ ", cwd);
+
+        if (home != NULL && home[0] != '\0' && strstr(cwd, home) == cwd && (cwd[strlen(home)] == '/' || cwd[strlen(home)] == '\0')) {
+            char *new_cwd = replace_first_substring(cwd, home, "~");
+
+            if (new_cwd != NULL) {
+                free(cwd);
+                cwd = new_cwd;
+            }
+        }
+        if (strcmp(pw->pw_name, "root") == 0) printf(ANSI_FG_RED "%s@%s" ANSI_STYLE_RESET ":" ANSI_FG_BLUE "%s" ANSI_STYLE_RESET "# ", pw->pw_name, hostname, cwd);
+        else printf(ANSI_FG_GREEN "%s@%s" ANSI_STYLE_RESET ":" ANSI_FG_BLUE "%s" ANSI_STYLE_RESET "$ ", pw->pw_name, hostname, cwd);
     } else {
         perror("getcwd error\n");
         free(cwd);
-        exit(EXIT_FAILURE);
+        return __FUNC_FAIL;
     }
 
     free(cwd);
-    return 0;
+    return __FUNC_SUCCESS;
 }

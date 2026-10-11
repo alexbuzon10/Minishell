@@ -18,6 +18,7 @@
 #include "../include/parser.h"
 #include "../include/signals.h"
 #include "../include/utils.h"
+#include "../include/history.h"
 
 /**************************** Functions ********************************/
 
@@ -28,7 +29,13 @@ int main(void) {
     char* line = NULL;
     cmd_t cmd;
     input_status_t status;
+    history_t history; 
     bool running = true;
+
+    if (init_history(&history) < 0) {
+        perror("init_history");
+        return EXIT_FAILURE;
+    }
 
     if (setup_signals() != __FUNC_SUCCESS) return EXIT_FAILURE;
 
@@ -36,7 +43,7 @@ int main(void) {
         // print_prompt();
         // fflush(stdout);
 
-        line = readline(&status);
+        line = readline(&status, &history);
 
         switch (status) {
             case INPUT_ERROR:
@@ -63,6 +70,11 @@ int main(void) {
             free(line);
             continue;
         } else {
+            if (save_entry(line, &history) != __FUNC_SUCCESS) {
+                free(line);
+                break;
+            }
+
             cmd = parsecmd(line);
 
             execute(&cmd);

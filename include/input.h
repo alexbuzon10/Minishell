@@ -31,6 +31,8 @@ typedef enum input_status_e {
 #include <termios.h>
 #include <stddef.h>
 
+#include "../include/history.h"
+
 /****************************** Structures ******************************/
 
 typedef struct line_s {
@@ -56,7 +58,7 @@ void stdinflush(void);
  * @brief Read a line inputted by the user
  * @return Allocated string or NULL on EOF/error
  */
-char *readline(input_status_t *status);
+char *readline(input_status_t *status, history_t *history);
 
 /**
  * @brief Replace '\n' with '\0'
@@ -86,6 +88,25 @@ int expand_line(line_t *line);
  * @brief Free the line buffer and reset its fields
  */
 void free_line(line_t *line);
+
+/**
+ * @brief Replaces the current line content with a new string.
+ *
+ * Copies the provided text into the line buffer, reallocating
+ * memory if the current capacity is insufficient. Updates the
+ * line size and moves the cursor to the end of the new content.
+ *
+ * @param line Pointer to the line structure to modify.
+ * @param text Null-terminated string containing the new content.
+ * @return __FUNC_SUCCESS on success, or __FUNC_FAIL if memory
+ *         allocation fails.
+ *
+ * @note The function does not take ownership of the provided text.
+ *       The caller remains responsible for managing its memory.
+ * @note The line structure must be initialized before calling
+ *       this function.
+ */
+int set_line_content(line_t *line, const char *text);
 
 /***************************** Line editing *****************************/
 
@@ -158,7 +179,7 @@ void init_escape(escape_t *escape);
  * @brief Process a byte belonging to an ANSI escape sequence
  * @return 1 if consumed, 0 if not consumed
  */
-int handle_escape_sequence(line_t *line, escape_t *escape, unsigned char c);
+int handle_escape_sequence(line_t *line, escape_t *escape, unsigned char c, history_t *history, char **draft);
 
 /**
  * @brief Process special control characters
