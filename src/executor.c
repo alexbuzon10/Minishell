@@ -65,7 +65,7 @@ int execute(const cmd_t *cmd) {
                     }
                 }
 
-                signal(SIGINT, handler_sigint);
+                setup_signals();
                 signal(SIGQUIT, SIG_IGN);
         }
     }
