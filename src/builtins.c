@@ -17,15 +17,16 @@
 
 #include "../include/builtins.h"
 #include "../include/minishell.h"
+#include "../include/input.h"
 
 /**************************** Functions ********************************/
 
-static int buitinExit(cmd_t *cmd) {
+static int buitinExit(const cmd_t *cmd) {
     (void) cmd;
     exit(EXIT_SUCCESS);
 }
 
-static int builtinHelp(cmd_t *cmd) {
+static int builtinHelp(const cmd_t *cmd) {
     (void) cmd;
 
     printf("Lista de comandos: \n");
@@ -36,23 +37,57 @@ static int builtinHelp(cmd_t *cmd) {
     return __FUNC_SUCCESS;
 }
 
-static int builtinCd(cmd_t *cmd) {
-    if (cmd->argc == 1 || (cmd->argc == 2 && strcmp(cmd->argv[1], "~") == 0)) {
-        chdir(getenv("HOME"));
-        return 0;
-    } else if (cmd->argc > 2) {
-        printf("Uso: cd <ruta_buscada>");
-        return 0;
-    }
+static int builtinCd(const cmd_t *cmd) {
+    const char *path;
+    const char *home;
+    char *expanded_path = NULL;
+    int result;
 
-    chdir(cmd->argv[1]);
+    if (cmd == NULL || cmd->argv == NULL)
+        return __FUNC_FAIL;
 
-    if (errno == __O_DIRECTORY) {
-        perror("La ruta introducida no existe.\n");
+    if (cmd->argc > 2) {
+        fprintf(stderr, "cd: demasiados argumentos\n");
         return __FUNC_FAIL;
     }
 
-    return __FUNC_SUCCESS;
+    home = getenv("HOME");
+
+    if (cmd->argc == 1 || strcmp(cmd->argv[1], "~") == 0) {
+        if (home == NULL) {
+            fprintf(stderr, "cd: HOME not set\n");
+            return __FUNC_FAIL;
+        }
+
+        path = home;
+    }
+    else if (strncmp(cmd->argv[1], "~/", 2) == 0) {
+        if (home == NULL) {
+            fprintf(stderr, "cd: HOME not set\n");
+            return __FUNC_FAIL;
+        }
+
+        expanded_path = replace_first_substring(cmd->argv[1], "~", home);
+
+        if (expanded_path == NULL) {
+            perror("cd");
+            return __FUNC_FAIL;
+        }
+
+        path = expanded_path;
+    }
+    else {
+        path = cmd->argv[1];
+    }
+
+    result = chdir(path);
+
+    if (result == -1)
+        perror("cd");
+
+    free(expanded_path);
+
+    return (result == 0) ? __FUNC_SUCCESS : __FUNC_FAIL;
 }
 
 static builtin_t builtins[] = {
@@ -66,7 +101,7 @@ static builtin_t builtins[] = {
 /**
  * @brief   Executes a builtin
  */
-int executebuiltin(cmd_t *cmd) {
+int executebuiltin(const cmd_t *cmd) {
     for (size_t i = 0; i < __NUM_BUILTINS; i++) {
         if (strcmp(cmd->argv[0], builtins[i].name) == 0) {
             return builtins[i].fn(cmd);
@@ -75,4 +110,3 @@ int executebuiltin(cmd_t *cmd) {
 
     return __NOT_A_BUILTIN;
 }
-

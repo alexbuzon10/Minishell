@@ -11,11 +11,12 @@
 
 #include "../include/utils.h"
 #include "../include/minishell.h"
+#include "../include/terminal_codes.h"
 
 /**************************** Functions ********************************/
 
 void clearscreen(void) {
-    write(STDOUT_FILENO, "\033[2J\033[H", 7);
+    write(STDOUT_FILENO, ANSI_RESET_SCREEN, 7);
     return;
 }
 

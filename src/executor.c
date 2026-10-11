@@ -23,7 +23,7 @@
 /**
  * @brief   Executes a command
  */
-int execute(cmd_t *cmd) {
+int execute(const cmd_t *cmd) {
     if (executebuiltin(cmd) == __NOT_A_BUILTIN){
         signal(SIGINT, SIG_IGN);
         signal(SIGQUIT, SIG_IGN);

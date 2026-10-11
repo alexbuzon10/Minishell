@@ -27,20 +27,35 @@
 int main(void) {
     char* line = NULL;
     cmd_t cmd;
+    input_status_t status;
+    bool running = true;
 
-    struct sigaction sa;
-    sa.sa_handler = handler_sigint;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
+    if (setup_signals() != __FUNC_SUCCESS) return EXIT_FAILURE;
 
-    sigaction(SIGINT, &sa, NULL);
-    signal(SIGQUIT, SIG_IGN);
+    while (running) {
+        // print_prompt();
+        // fflush(stdout);
 
-    while (true) {
-        print_prompt();
-        fflush(stdout);
+        line = readline(&status);
 
-        line = readline();
+        switch (status) {
+            case INPUT_ERROR:
+            case INPUT_EOF:
+                running = false;
+                break;
+
+            case INPUT_INTERRUPTED:
+                continue;
+
+            case INPUT_ENTER:
+                break;
+
+            case INPUT_CONTINUE:
+            case INPUT_NOT_HANDLED:
+                /* Estos estados no deberían llegar a main() */
+                running = false;
+                break;
+        }
 
         if (line == NULL) break;
 

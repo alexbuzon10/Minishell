@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "../include/minishell.h"
+#include "../include/terminal_codes.h"
 
 /**************************** Functions ********************************/
 
@@ -40,7 +41,7 @@ int print_prompt(void){
 
     if (cwd != NULL){
         replace_diff_length(cwd, getenv("HOME"), "~");
-        printf("MINISHELL %s $ ", cwd);
+        printf("MINISHELL " ANSI_FG_BLUE "%s " ANSI_STYLE_RESET "$ ", cwd);
     } else {
         perror("getcwd error\n");
         free(cwd);

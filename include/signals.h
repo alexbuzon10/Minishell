@@ -24,4 +24,11 @@ extern volatile sig_atomic_t g_sigint_received; // A flag that getting if SIGINT
  */
 void handler_sigint(int signo);
 
+/**
+ * @brief Configure the signal handling for the minishell.
+ *
+ * @return 0 on success, -1 on failure.
+ */
+int setup_signals(void);
+
 #endif /* __MINSHELL_SIGNALS_H */

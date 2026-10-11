@@ -28,6 +28,25 @@ void handler_sigint(int signo){
     (void) signo;
 
     g_sigint_received = 1; // (1) Like this
-    write(STDOUT_FILENO, "\n", 1);
-    fflush(stdout);
+    write(STDOUT_FILENO, "^C", 2);
+}
+
+/**
+ * @brief Configure the signal handling for the minishell.
+ *
+ * @return 0 on success, -1 on failure.
+ */
+int setup_signals(void) {
+    struct sigaction sa;
+
+    sa.sa_handler = handler_sigint;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("sigaction");
+        return __FUNC_PANIC;
+    }
+
+    return __FUNC_SUCCESS;
 }

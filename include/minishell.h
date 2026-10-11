@@ -16,6 +16,7 @@
 
 /**************************** Defines ***********************************/
 
+#define __FUNC_PANIC -1
 #define __FUNC_FAIL 1
 #define __FUNC_SUCCESS 0
 #define __NOT_A_BUILTIN -1
